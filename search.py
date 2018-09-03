@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -87,17 +87,70 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    initial_state = problem.getStartState()
+    fringe = util.Stack()
+    fringe.push((initial_state, [], 0))
+    state_dictionnary = {}
+
+    while(True):
+        (current_state, path, cumulated_cost) = fringe.pop()
+
+        if(str(current_state) not in state_dictionnary.keys()):
+            state_dictionnary[str(current_state)] = True
+            if(problem.isGoalState(current_state)):
+                return(path)
+
+            for(successor, action, step_cost) in problem.getSuccessors(current_state):
+                action_list = path+[action]
+                new_cost = step_cost + cumulated_cost
+                fringe.push((successor, action_list, new_cost))
+
+
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    initial_state = problem.getStartState()
+    fringe = util.Queue()
+    fringe.push((initial_state, [], 0))
+    state_dictionnary = {}
+
+    while(True):
+        (current_state, path, cumulated_cost) = fringe.pop()
+
+        if(str(current_state) not in state_dictionnary.keys()):
+            state_dictionnary[str(current_state)] = True
+            if(problem.isGoalState(current_state)):
+                return(path)
+
+            for(successor, action, step_cost) in problem.getSuccessors(current_state):
+                action_list = path+[action]
+                new_cost = step_cost + cumulated_cost
+                fringe.push((successor, action_list, new_cost))
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    initial_state = problem.getStartState()
+    fringe = util.PriorityQueue()
+    fringe.push((initial_state, []), 0)
+    state_dictionnary = {}
+
+    while(True):
+        (current_state, path) = fringe.pop()
+
+        if(problem.isGoalState(current_state)):
+            return(path)
+
+        if(str(current_state) not in state_dictionnary.keys()):
+            state_dictionnary[str(current_state)] = True
+
+            for(successor, action,_) in problem.getSuccessors(current_state):
+                action_list = path+[action]
+                new_cost = problem.getCostOfActions(action_list)
+                fringe.update((successor, action_list), new_cost)
+
 
 def nullHeuristic(state, problem=None):
     """
