@@ -475,10 +475,20 @@ def foodHeuristic(state, problem):
     """
     def manhattan_distance(x, y):
         return(abs(x[1]-y[1]) + abs(x[0] - y[0]))
-        
+
     position, foodGrid = state
     food_positions = foodGrid.asList()
     res = len(food_positions)
+    n = res
+
+    for i in range(n):
+        position_i = food_positions[i]
+        for j in range(i, n):
+            position_j = food_positions[j]
+            d_pi = manhattan_distance(position,  position_i)
+            d_pj = manhattan_distance(position, position_j)
+            d_ij =manhattan_distance(position_i, position_j)
+            res = max(res, min(d_pi + d_ij, d_pj + d_ij))
 
     for food_position in food_positions:
         res = max(res, manhattan_distance(position, food_position))
