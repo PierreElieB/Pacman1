@@ -143,13 +143,14 @@ def uniformCostSearch(problem):
         if(problem.isGoalState(current_state)):
             return(path)
 
-        if(str(current_state) not in state_dictionnary.keys()):
-            state_dictionnary[str(current_state)] = True
+        if(current_state not in state_dictionnary.keys()):
+            state_dictionnary[current_state] = True
 
             for(successor, action,_) in problem.getSuccessors(current_state):
                 action_list = path+[action]
                 new_cost = problem.getCostOfActions(action_list)
                 fringe.update((successor, action_list), new_cost)
+
 
 
 def nullHeuristic(state, problem=None):
