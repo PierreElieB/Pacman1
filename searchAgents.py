@@ -487,8 +487,19 @@ def foodHeuristic(state, problem):
             position_j = food_positions[j]
             d_pi = manhattan_distance(position,  position_i)
             d_pj = manhattan_distance(position, position_j)
-            d_ij =manhattan_distance(position_i, position_j)
+            d_ij = manhattan_distance(position_i, position_j)
+            d_ji = d_ij
             res = max(res, min(d_pi + d_ij, d_pj + d_ij))
+
+            for k in range(j,n):
+                position_k = food_positions[k]
+                d_pk = manhattan_distance(position, position_k)
+                d_ik = manhattan_distance(position_i, position_k)
+                d_jk = manhattan_distance(position_j, position_k)
+                d_kj = d_jk
+                d_ki = d_ik
+                min_3d = min(d_pi+d_ij+d_jk, d_pi+d_ik+d_kj, d_pj+d_ji+d_ik, d_pj+d_jk+d_ki, d_pk+d_ki+d_ij, d_pk+d_kj+d_ji)
+                res = max(res, min_3d)
 
     for food_position in food_positions:
         res = max(res, manhattan_distance(position, food_position))
