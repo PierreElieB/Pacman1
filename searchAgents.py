@@ -403,7 +403,41 @@ class FoodSearchProblem:
         self.walls = startingGameState.getWalls()
         self.startingGameState = startingGameState
         self._expanded = 0 # DO NOT CHANGE
-        self.heuristicInfo = {} # A dictionary for the heuristic to store information
+
+        current_state = (1,1)
+        channel_length = 0
+        channel_description = {}
+        channel_description[str(current_state)] = 0
+        previous_state = 0,0
+        next_state = 0,0
+
+        while(True):
+            possible_nexts = 0
+
+            for direction in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+                x,y = current_state
+                dx, dy = Actions.directionToVector(direction)
+                nextx, nexty = int(x + dx), int(y + dy)
+
+                if(not self.walls[nextx][nexty]):
+                    if(not((nextx, nexty) == previous_state)):
+                        possible_nexts+=1
+                        next_state = nextx,nexty
+
+            if(possible_nexts == 1):
+                channel_length+=1
+                previous_state = current_state
+                current_state= next_state
+                channel_description[str(current_state)] = channel_length
+            else:
+                break
+
+        channel_entrance = current_state
+
+        self.heuristicInfo = {'south_west_corner': (1,1), 'channel_entrance': channel_entrance,
+        'channel_length': channel_length,
+        'channel_description': channel_description } # A dictionary for the heuristic to store information
+
 
     def getStartState(self):
         return self.start
@@ -423,6 +457,7 @@ class FoodSearchProblem:
                 nextFood = state[1].copy()
                 nextFood[nextx][nexty] = False
                 successors.append( ( ((nextx, nexty), nextFood), direction, 1) )
+
         return successors
 
     def getCostOfActions(self, actions):
@@ -487,24 +522,51 @@ def foodHeuristic(state, problem):
             position_j = food_positions[j]
             d_pi = manhattan_distance(position,  position_i)
             d_pj = manhattan_distance(position, position_j)
-            d_ij = manhattan_distance(position_i, position_j)
-            d_ji = d_ij
+            d_ij =manhattan_distance(position_i, position_j)
             res = max(res, min(d_pi + d_ij, d_pj + d_ij))
-
-            for k in range(j,n):
-                position_k = food_positions[k]
-                d_pk = manhattan_distance(position, position_k)
-                d_ik = manhattan_distance(position_i, position_k)
-                d_jk = manhattan_distance(position_j, position_k)
-                d_kj = d_jk
-                d_ki = d_ik
-                min_3d = min(d_pi+d_ij+d_jk, d_pi+d_ik+d_kj, d_pj+d_ji+d_ik, d_pj+d_jk+d_ki, d_pk+d_ki+d_ij, d_pk+d_kj+d_ji)
-                res = max(res, min_3d)
 
     for food_position in food_positions:
         res = max(res, manhattan_distance(position, food_position))
 
-    return(res)
+    channel_description = problem.heuristicInfo['channel_description']
+    channel_length = problem.heuristicInfo['channel_length']
+    channel_entrance = problem.heuristicInfo['channel_entrance']
+
+    res = 0
+    food_channel = []
+    food_not_channel = []
+
+    for dot_position in food_positions:
+        if(str(dot_position) in channel_description.keys()):
+            food_channel.append(dot_position)
+        else:
+            food_not_channel.append(dot_position)
+
+    channel_cost = 0
+
+    for dot_position in food_channel:
+        if(str(position) in channel_description.keys()):
+            current_candidate = abs(channel_description[str(dot_position)] - channel_description[str(position)])
+        else:
+            current_candidate = channel_cost - channel_description[str(dot_position)]
+
+        if(current_candidate>channel_cost):
+            channel_cost = current_candidate
+
+    non_channel_cost = 0
+
+    for dot_position in food_not_channel:
+        current_candidate = 0
+
+        if(channel_cost > 0):
+            current_candidate = manhattan_distance(dot_position, channel_entrance)
+        else:
+            current_candidate = manhattan_distance(dot_position, position)
+
+        if(current_candidate > non_channel_cost):
+            non_channel_cost = current_candidate
+
+    return(max(res, non_channel_cost+channel_cost))
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
